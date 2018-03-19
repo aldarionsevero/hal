@@ -6,6 +6,11 @@ import (
 	"github.com/danryan/hal/handler"
 	_ "github.com/danryan/hal/store/memory"
 	"os"
+	"fmt"
+	"log"
+	"time"
+	//"reflect"
+	//"fmt"
 )
 
 // HAL is just another Go package, which means you are free to organize things
@@ -16,8 +21,23 @@ var pingHandler = hal.Hear(`ping`, func(res *hal.Response) error {
 	return res.Send("PONG")
 })
 
+var testouHandler = hal.Hear(`teste`, func(res *hal.Response) error {
+	file, err := os.Create("result.txt")
+	if err != nil {
+		log.Fatal("Cannot create file", err)
+	}
+	defer file.Close()
+	fmt.Fprintf(file, "opened")
+	hal.Logger.Info("passou aqui")
+
+	return res.Send("TESTOU")
+})
+
+var robot *hal.Robot
+
 func run() int {
 	robot, err := hal.NewRobot()
+	//fmt.Println(reflect.TypeOf(robot))
 	if err != nil {
 		hal.Logger.Error(err)
 		return 1
@@ -38,6 +58,7 @@ func run() int {
 
 	robot.Handle(
 		pingHandler,
+		testouHandler,
 		fooHandler,
 		tableFlipHandler,
 
@@ -60,11 +81,10 @@ func run() int {
 			return res.Send("lo")
 		}),
 	)
-
-	if err := robot.Run(); err != nil {
-		hal.Logger.Error(err)
-		return 1
-	}
+	robot.Run()
+//	for(true){
+//
+//	}
 	return 0
 }
 
